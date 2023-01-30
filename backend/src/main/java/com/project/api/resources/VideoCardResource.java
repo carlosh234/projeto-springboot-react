@@ -67,6 +67,6 @@ public class VideoCardResource {
     public ResponseEntity<VideoCardDTO> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
-    }
 
+    }
 }

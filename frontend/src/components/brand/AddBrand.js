@@ -1,7 +1,7 @@
-import { React, useEffect, useState } from "react";
+import { React, useState } from "react";
 import axios from "axios";
 import { baseURL } from "../../utils/api";
-import { useParams, useNavigate, Link } from "react-router-dom";
+
 import {
   Form,
   Col,
@@ -14,80 +14,87 @@ import {
   Spinner,
 } from "reactstrap";
 
-export const AddBrand = () => {
-  const [brand, setBrand] = useState({});
-  const [successMsg, setSuccessMsg] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(false);
-  const [errorList, setErrorList] = useState([]);
+export const AddBrand = ({ brands, setBrands, setShowCreateForm }) => {
+  const [newBrand, setNewBrand] = useState({});
+  const [successCreate, setSuccessCreate] = useState(false);
+  const [errorCreate, setErrorCreate] = useState(false);
+  const [createErrorList, setCreateErrorList] = useState([]);
 
-  const navigate = useNavigate();
-
-  function handleCreate(event) {
+  const handleCreate = (event) => {
     event.preventDefault();
     axios
-      .post(`${baseURL}/brands`, brand)
+      .post(`${baseURL}/brands`, newBrand)
       .then((res) => {
-        setBrand(res.data);
-        setSuccessMsg(true);
-        setErrorMsg(false);
+        setNewBrand(res.data);
+        console.log(newBrand);
+        setSuccessCreate(true);
+        setErrorCreate(false);
         setTimeout(() => {
-          setSuccessMsg(null);
-          navigate("/");
+          setSuccessCreate(false);
+          setBrands(brands.concat({ ...newBrand, id: res.data.id }));
         }, 1500);
         console.log(res);
       })
       .catch((e) => {
-        console.log(e.response);
-        setSuccessMsg(false);
-        setErrorMsg(true);
-        setErrorList(e.response.data.errors);
+        console.log(e.response.data);
+        setCreateErrorList(e.response.data.errors);
+        setSuccessCreate(false);
+        setErrorCreate(true);
       });
-  }
+  };
 
   return (
-    <Container className="container bg-light my-5 w-75">
+    <Container className="container-xl bg-light my-5 w-75">
       <Row>
         <Col>
           <Form onSubmit={handleCreate} className="form-inline">
-            <h3>Adicionar Marca:</h3>
-            <Row className="row-cols-lg-auto g-3 align-items-center">
-              <Col className="">
-                <Label className="">Nome</Label>
+            <h3 className="text-center">
+              Adicionar dados da BRAND <b className="text-primary"></b>
+            </h3>
+            <Row>
+              <Col className="mx-auto">
+                <Label className="">Nome da Marca</Label>
                 <Input
                   type="text"
-                  onChange={(e) => setBrand({ ...brand, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewBrand({ ...newBrand, name: e.target.value })
+                  }
                   className="form-control w-75 "
                 />
               </Col>
             </Row>
+
             <Col className="my-2">
               <Button>Adicionar</Button>
             </Col>
           </Form>
+          <Button
+            color="danger"
+            onClick={() => {
+              setShowCreateForm(false);
+            }}
+          >
+            Cancelar
+          </Button>
         </Col>
-        <>
-          {successMsg && (
+        <Row>
+          {successCreate && (
             <Alert>
               <b>Marca adicionada com sucesso.</b>
-              <br />
-              <b>
-                Voltando para a página principal{" "}
-                <Spinner color="success">Loading...</Spinner>
-              </b>
-              <br />
-              <Link to="/">
-                <Button className="my-3">Voltar</Button>
-              </Link>
+              <Spinner color="success">Loading...</Spinner>
             </Alert>
           )}
-          {errorMsg && (
+          {errorCreate && (
             <Alert color="danger">
-              <b>Erro no preenchimento dos dados.</b>
-              <br />
-              <b>{errorList.map((e) => e.message)}</b>
+              <h4>
+                <b>Erro no preenchimento dos dados.</b>
+              </h4>
+              {createErrorList.map((e) => (
+                <p key={e.field}>{e.message}</p>
+              ))}
             </Alert>
           )}
-        </>
+        </Row>
       </Row>
     </Container>
   );

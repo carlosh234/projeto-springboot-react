@@ -21,12 +21,8 @@ root.render(
       <NavBar />
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/gpus/update/:id" element={<UpdateGpu />} />
-        <Route path="/gpus/create" element={<AddGpu />} />
         <Route path="/gpus/:id/videocards" element={<GpuVideoCards />} />
         <Route path="/brands/:id/videocards" element={<BrandVideoCards />} />
-        <Route path="/brands/update/:id" element={<UpdateBrand />} />
-        <Route path="/brands/create" element={<AddBrand />} />
       </Routes>
     </Router>
   </React.StrictMode>

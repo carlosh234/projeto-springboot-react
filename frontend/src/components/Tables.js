@@ -9,6 +9,7 @@ import {
 } from "reactstrap";
 import { BrandTable } from "./brand/BrandTable";
 import { GpuTable } from "./gpu/GpuTable";
+import { VideoCardTable } from "./videocard/VideoCardTable";
 
 export const Tables = () => {
   const [open, setOpen] = useState("1");
@@ -37,10 +38,6 @@ export const Tables = () => {
           </AccordionHeader>
           <AccordionBody accordionId="2">
             <h1>MARCAS</h1>
-            <Link to="/brands/create">
-              {" "}
-              <Button>Inserir nova Marca</Button>
-            </Link>
             <BrandTable />
           </AccordionBody>
         </AccordionItem>
@@ -50,6 +47,7 @@ export const Tables = () => {
           </AccordionHeader>
           <AccordionBody accordionId="3">
             <h1>PLACAS DE VÍDEO</h1>
+            <VideoCardTable />
           </AccordionBody>
         </AccordionItem>
       </Accordion>

@@ -31,7 +31,12 @@ export const UpdateGpu = ({
     event.preventDefault();
 
     axios
-      .put(`${baseURL}/gpus/${currentGpu.id}`, currentGpu)
+      .put(`${baseURL}/gpus/${currentGpu.id}`, {
+        name: currentGpu.name,
+        memorySizeGb: currentGpu.memorySizeGb,
+        memoryType: currentGpu.memoryType,
+        manufacturer: currentGpu.manufacturer,
+      })
       .then((res) => {
         setCurrentGpu(res.data);
         setUpdateError(false);
@@ -42,7 +47,6 @@ export const UpdateGpu = ({
             gpus.map((gpu) => (gpu.id === currentGpu.id ? res.data : gpu))
           );
         }, timeToCloseMsg);
-
         console.log(res);
       })
       .catch((e) => {
@@ -147,6 +151,7 @@ export const UpdateGpu = ({
             <Alert color="danger">
               <b>Erro no preenchimento dos dados.</b>
               <br />
+
               <b>{updateErrorList.map((e) => e.message)}</b>
             </Alert>
           )}

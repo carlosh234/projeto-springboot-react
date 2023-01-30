@@ -4,17 +4,17 @@ import { baseURL } from "../../utils/api";
 
 import { Link } from "react-router-dom";
 
-import { Table, Button, Alert } from "reactstrap";
+import { Table, Button } from "reactstrap";
+import { UpdateBrand } from "./UpdateBrand";
+import { DeleteBrand } from "./DeleteBrand";
+import { AddBrand } from "./AddBrand";
 
 export const BrandTable = () => {
   const [brands, setBrands] = useState([]);
+
   const [deleteWarning, setDeleteWarning] = useState(false);
   const [brandName, setBrandName] = useState("");
   const [brandId, setBrandId] = useState(0);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
-
-  const timeToCloseMsg = 3000;
 
   useEffect(() => {
     axios
@@ -23,65 +23,66 @@ export const BrandTable = () => {
       .then((data) => setBrands(data.content));
   }, []);
 
-  const onDelete = (brandName, brandId) => {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [currentBrand, setCurrentBrand] = useState({});
+
+  const createAction = () => {
+    setShowCreateForm(true);
+    setDeleteWarning(false);
+    setShowUpdateForm(false);
+  };
+
+  const updateAction = (brand, brandId) => {
+    setShowUpdateForm(true);
+    setCurrentBrand(brand);
+    setBrandId(brandId);
+    setDeleteWarning(false);
+    setShowCreateForm(false);
+  };
+
+  const deleteAction = (brandName, brandId) => {
     setBrandName(brandName);
     setDeleteWarning(true);
     setBrandId(brandId);
-  };
-
-  const handleDelete = () => {
-    axios
-      .delete(`${baseURL}/brands/${brandId}`)
-      .then(() => {
-        setBrands(brands.filter((g) => g.id !== brandId));
-        setErrorMsg(false);
-        setSuccessMsg(`A Marca foi excluida com sucesso.`);
-
-        setTimeout(() => {
-          setSuccessMsg(null);
-        }, timeToCloseMsg);
-      })
-      .catch((e) => {
-        setSuccessMsg(false);
-        setErrorMsg(e.response.data.message);
-        setTimeout(() => {
-          setErrorMsg(null);
-        }, timeToCloseMsg);
-      });
-    setDeleteWarning(false);
+    setShowUpdateForm(false);
+    setShowCreateForm(false);
   };
 
   return (
     <div>
+      {/*SHOW CREATE FORM ON BUTTON CLICK */}
+      <Button onClick={() => createAction()}>Inserir nova Marca</Button>
+      {showCreateForm && (
+        <AddBrand
+          setShowCreateForm={setShowCreateForm}
+          brands={brands}
+          setBrands={setBrands}
+        />
+      )}
+
+      {/*SHOW UPDATE FORM ON BUTTON CLICK */}
+      {showUpdateForm && (
+        <UpdateBrand
+          setShowUpdateForm={setShowUpdateForm}
+          brands={brands}
+          setBrands={setBrands}
+          currentBrand={currentBrand}
+          setCurrentBrand={setCurrentBrand}
+        />
+      )}
+      {/*SHOW DELETE  WARNING ON BUTTON CLICK */}
       {deleteWarning && (
-        <Alert color="danger w-25 my-3">
-          <b>Tem certeza que deseja excluir a Marca: {brandName} ? </b>
-          <br />
-          <Button color="success" onClick={() => handleDelete()}>
-            Sim
-          </Button>
-          <Button
-            className="mx-1"
-            color="danger"
-            onClick={() => setDeleteWarning(false)}
-          >
-            Não
-          </Button>
-        </Alert>
+        <DeleteBrand
+          setDeleteWarning={setDeleteWarning}
+          brandName={brandName}
+          brandId={brandId}
+          brands={brands}
+          setBrands={setBrands}
+        />
       )}
-      {successMsg && (
-        <Alert color="success w-25 my-3">
-          <b>{successMsg}</b>
-        </Alert>
-      )}
-      {errorMsg && (
-        <Alert color="danger w-25 my-3">
-          <b>
-            {errorMsg} : Só poderá excluir esta Marca se não houve Placas de
-            Vídeo associadas.
-          </b>
-        </Alert>
-      )}
+
+      {/*TABLE WITH ALL BRANDS E ACTION BUTTONS*/}
       <Table size="sm" className="table-light mt-2">
         <thead>
           <tr>
@@ -94,22 +95,25 @@ export const BrandTable = () => {
             <tr className="" key={b.id}>
               <td>{b.name}</td>
               <td>
-                <Link to={`brands/update/${b.id}`}>
-                  <Button color="warning" size="sm" className="mx-2">
-                    Alterar
-                  </Button>
-                </Link>
+                <Button
+                  color="warning"
+                  size="sm"
+                  className="mx-2"
+                  onClick={() => updateAction(b, b.id)}
+                >
+                  Alterar
+                </Button>
 
                 <Button
                   color="danger"
                   size="sm"
-                  onClick={() => onDelete(b.name, b.id)}
+                  onClick={() => deleteAction(b.name, b.id)}
                 >
                   Excluir
                 </Button>
                 <Link to={`brands/${b.id}/videocards`}>
                   <Button color="primary" size="sm" className="mx-2">
-                    Placas da Marca {b.name}
+                    Placas {b.name}
                   </Button>
                 </Link>
               </td>

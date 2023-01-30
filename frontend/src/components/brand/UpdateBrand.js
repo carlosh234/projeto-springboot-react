@@ -1,7 +1,7 @@
-import { React, useEffect, useState } from "react";
+import { React, useState } from "react";
 import axios from "axios";
 import { baseURL } from "../../utils/api";
-import { useParams, useNavigate, Link } from "react-router-dom";
+
 import {
   Form,
   Col,
@@ -14,88 +14,93 @@ import {
   Spinner,
 } from "reactstrap";
 
-export const UpdateBrand = () => {
-  const [brand, setBrand] = useState({});
-  const [successMsg, setSuccessMsg] = useState(false);
-  const [errorMsg, setErrorMsg] = useState(false);
-  const { id } = useParams();
-  const navigate = useNavigate();
+export const UpdateBrand = ({
+  setShowUpdateForm,
+  brands,
+  setBrands,
+  currentBrand,
+  setCurrentBrand,
+}) => {
+  const [successUpdate, setSuccessUpdate] = useState(false);
+  const [updateError, setUpdateError] = useState(false);
+  const [updateErrorList, setUpdateErrorList] = useState([]);
 
-  useEffect(() => {
-    axios.get(`${baseURL}/brands/${id}`).then((res) => {
-      setBrand(res.data);
-      console.log(res.data);
-    });
-  }, []);
+  const timeToCloseMsg = 2000;
 
-  function handleUpdate(event) {
+  const handleUpdate = (event) => {
     event.preventDefault();
+
     axios
-      .put(`${baseURL}/brands/${id}`, brand)
+      .put(`${baseURL}/brands/${currentBrand.id}`, { name: currentBrand.name })
       .then((res) => {
-        setBrand(res.data);
-        setErrorMsg(false);
-        setSuccessMsg(true);
-
+        setCurrentBrand(res.data);
+        setUpdateError(false);
+        setSuccessUpdate(true);
         setTimeout(() => {
-          setSuccessMsg(false);
-          navigate("/");
-        }, 1500);
-
+          setSuccessUpdate(false);
+          setBrands(
+            brands.map((brand) =>
+              brand.id === currentBrand.id ? res.data : brand
+            )
+          );
+        }, timeToCloseMsg);
         console.log(res);
       })
       .catch((e) => {
-        console.log(e.response);
-
-        setSuccessMsg(false);
-        setErrorMsg(true);
+        console.log(e.response.data);
+        setUpdateErrorList(e.response.data.errors);
+        setSuccessUpdate(false);
+        setUpdateError(true);
       });
-  }
-
+  };
   return (
     <Container className="container bg-light my-5 w-75">
-      <Row>
+      <Row className="">
         <Col>
           <Form onSubmit={handleUpdate} className="form-inline">
-            <h3>
-              Alterar nome da Marca:
-              <b className="text-primary"> {brand.name}</b>
+            <h3 className="text-center">
+              Alterar dados da Marca:{" "}
+              <b className="text-primary">{currentBrand.name}</b>
             </h3>
-            <Row className="row-cols-lg-auto g-3 align-items-center">
-              <Col className="">
-                <Label className="">Nome</Label>
-                <Input
-                  defaultValue={brand.name}
-                  type="text"
-                  onChange={(e) => setBrand({ ...brand, name: e.target.value })}
-                  className="form-control w-75 "
-                />
-              </Col>
-            </Row>
+
+            <Col className="mx-auto">
+              <Label className="">Nome da Marca</Label>
+              <Input
+                type="text"
+                value={currentBrand.name}
+                onChange={(e) =>
+                  setCurrentBrand({ ...currentBrand, name: e.target.value })
+                }
+                className="form-control w-75"
+              />
+            </Col>
+
             <Col className="my-2">
               <Button>Alterar</Button>
             </Col>
           </Form>
+          <Button
+            color="danger"
+            onClick={() => {
+              setShowUpdateForm(false);
+            }}
+          >
+            Cancelar
+          </Button>
         </Col>
         <>
-          {successMsg && (
+          {successUpdate && (
             <Alert>
-              <b>Marca alterada com sucesso.</b>
-              <br />
-              <b>
-                Voltando para a página principal{" "}
-                <Spinner color="success">Loading...</Spinner>
-              </b>
-              <br />
-              <Link to="/">
-                <Button className="my-3">Voltar</Button>
-              </Link>
+              <b>Marca alterada com sucesso. </b>
+              <Spinner color="success">Loading...</Spinner>
             </Alert>
           )}
-          {errorMsg && (
+          {updateError && (
             <Alert color="danger">
               <b>Erro no preenchimento dos dados.</b>
               <br />
+
+              <b>{updateErrorList.map((e) => e.message)}</b>
             </Alert>
           )}
         </>

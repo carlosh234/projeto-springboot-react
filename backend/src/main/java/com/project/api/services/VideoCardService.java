@@ -3,7 +3,6 @@ package com.project.api.services;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,7 +16,6 @@ import com.project.api.entities.VideoCard;
 import com.project.api.repositories.BrandRepository;
 import com.project.api.repositories.GpuRepository;
 import com.project.api.repositories.VideoCardRepository;
-import com.project.api.services.exceptions.DatabaseException;
 import com.project.api.services.exceptions.ResourceNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -50,9 +48,7 @@ public class VideoCardService {
     @Transactional
     public VideoCardDTO insert(VideoCardDTO dto) {
         VideoCard entity = new VideoCard();
-
         dtoDataToEntity(dto, entity);
-
         entity = repository.save(entity);
         return new VideoCardDTO(entity);
     }
@@ -68,13 +64,12 @@ public class VideoCardService {
         }
     }
 
+    @Transactional
     public void delete(Long id) {
         try {
             repository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             throw new ResourceNotFoundException("Id não encontrado: " + id);
-        } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Violação de integridade");
         }
     }
 
